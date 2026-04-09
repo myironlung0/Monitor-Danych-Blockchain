@@ -10,7 +10,7 @@ import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class BlockFetcher {
+public class BlockFetcher implements BlockFetcherInterface{
     private final Web3j web3j;
 
     public BlockFetcher(Web3j web3j){
@@ -40,21 +40,13 @@ public class BlockFetcher {
             EthBlock.Block block = web3j.ethGetBlockByNumber(new DefaultBlockParameterNumber(blockNum), false).send().getBlock();
 
             blockList.add(block);
-            System.out.println("Blok: " + block.getNumber());
+            //System.out.println("Blok: " + block.getNumber());
         }
 
         return blockList;
     }
 
-    public static void showBlockInfo(EthBlock.Block block) {
-        System.out.println("Block Number: " + block.getNumber());
-        System.out.println("Block Hash  : " + block.getHash());
-        System.out.println("Extra Data  : " + block.getExtraData());
-        System.out.println("Nonce       : " + block.getNonce());
-        System.out.println("Block Size  : " + block.getSize());
-        System.out.println("Transactions " + block.getTransactions().size());
 
-    }
 
 
 }
