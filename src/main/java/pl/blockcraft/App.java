@@ -2,11 +2,11 @@ package pl.blockcraft;
 
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthBlock;
-import org.web3j.protocol.core.methods.response.Web3ClientVersion;
 import pl.blockcraft.access.*;
+import pl.blockcraft.exceptions.BlockchainDataException;
+import pl.blockcraft.exceptions.ConnectionException;
 
 import java.util.List;
-import java.io.IOException;
 
 /**
  * MAIN CLASS
@@ -15,18 +15,16 @@ import java.io.IOException;
 
 public class App 
 {
-    // TODO: obsłuyć błędy
-    public static void main( String[] args ) throws IOException {
+    public static void main( String[] args ) throws ConnectionException, BlockchainDataException {
         Web3j web3j = Web3jProvider.connect();
         BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
         TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
 
         try {
-            Web3ClientVersion web3ClientVersion = web3j.web3ClientVersion().send();
-            String clientVersion = web3ClientVersion.getWeb3ClientVersion();
-
+            String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
+            // TESTY
             EthBlock.Block block = bFetcher.getLatestBlock();
 
             List<EthBlock.Block> blockList = bFetcher.getLatestBlocks(10);
@@ -43,8 +41,12 @@ public class App
             List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
             System.out.println("Lacznie transakcji: " + txList.size());
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (BlockchainDataException e) {
+            System.err.println("Blockchain data error: " + e.getMessage());
+            System.exit(1);
+        } catch (ConnectionException e) {
+            System.err.println("Connection error: " + e.getMessage());
+            System.exit(1);
         }
 
         web3j.shutdown();
