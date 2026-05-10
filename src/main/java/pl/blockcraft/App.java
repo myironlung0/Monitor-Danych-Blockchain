@@ -5,6 +5,9 @@ import org.web3j.protocol.core.methods.response.EthBlock;
 import pl.blockcraft.access.*;
 import pl.blockcraft.exceptions.BlockchainDataException;
 import pl.blockcraft.exceptions.ConnectionException;
+import pl.blockcraft.reporting.BlockData;
+import pl.blockcraft.reporting.ConsoleReporter;
+import pl.blockcraft.reporting.TransactionData;
 
 import java.util.List;
 
@@ -24,10 +27,34 @@ public class App
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
+            // BLOCKS
+            List<EthBlock.Block> blockList = bFetcher.getLatestBlocks(10);
+
+            for (EthBlock.Block block : blockList) {
+                BlockData dto = new BlockData(
+                        block.getNumber().longValue(),
+                        block.getHash(),
+                        block.getTransactions().size()
+                );
+                ConsoleReporter.reportBlock(dto);
+            }
+
+            // TRANSACTIONS
+            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
+
+            for (EthBlock.TransactionObject tx : txList) {
+                TransactionData dto = new TransactionData(
+                        tx.getHash(),
+                        tx.getFrom(),
+                        tx.getTo(),
+                        tx.getValue().doubleValue(),
+                        tx.getGas().longValue()
+                );
+                ConsoleReporter.reportTransaction(dto);
+            }
+
             // TESTY
             EthBlock.Block block = bFetcher.getLatestBlock();
-
-            List<EthBlock.Block> blockList = bFetcher.getLatestBlocks(10);
 
             //List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionList(fetcher.getLatestBlock().getNumber());
 
@@ -38,7 +65,6 @@ public class App
 //
 //            }
 
-            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
             System.out.println("Lacznie transakcji: " + txList.size());
 
         } catch (BlockchainDataException e) {
