@@ -26,7 +26,7 @@ public interface LogicInterface
 
     BigInteger getValueOfTransaction(EthBlock.TransactionObject transaction);
 
-    List<BigInteger> getValueOfTransactions(EthBlock.TransactionObject transactions);
+    List<BigInteger> getValueOfTransactions(List<EthBlock.TransactionObject> transactions);
 
     BigInteger getTotalValueOfTransactions(List<EthBlock.TransactionObject> transactions);
 
