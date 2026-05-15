@@ -75,6 +75,7 @@ public class LogicUnit implements LogicInterface
         BigInteger result = BigInteger.ZERO;
         for(EthBlock.Block block : blocks){
             result = result.add(getGas(block));
+            number++;
         }
         return result.divide(BigInteger.valueOf(number));
     }
@@ -111,7 +112,7 @@ public class LogicUnit implements LogicInterface
         BigInteger result = BigInteger.ZERO;
         List<EthBlock.TransactionResult> lista = block.getTransactions();
         for(EthBlock.TransactionResult transaction : lista){
-            result = result.add(getValueOfTransaction((EthBlock.TransactionObject)transaction));
+            result = result.add(getValueOfTransaction((EthBlock.TransactionObject) transaction.get()));
         }
         return result;
     }
