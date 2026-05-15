@@ -23,6 +23,7 @@ public class App {
     private static final List<EthBlock.Block> allBlocks = new java.util.ArrayList<>();
     private static final List<EthBlock.TransactionObject> allTransactions = new java.util.ArrayList<>();
     private static final LogicInterface logic = new LogicUnit();
+    private static final int UPDATE_TIME = 5000;
 
     public static void main(String[] args) {
         try {
@@ -60,24 +61,36 @@ public class App {
             }
 
             // MAIN LOOP
+            System.out.println("\nUPDATING EVERY " + UPDATE_TIME/1000 + " SECONDS");
             BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
             while (true) {
                 BigInteger currentBlock = bFetcher.getLatestBlock().getNumber();
 
                 if (currentBlock.compareTo(lastBlock) > 0) {
-                    System.out.println("new blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
+                    System.out.println("New blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
 
                     List<EthBlock.Block> newBlocks = bFetcher.getLatestBlocks(
                             currentBlock.subtract(lastBlock).intValue()
                     );
-                    // reportowanie dodac
                     for (EthBlock.Block block : newBlocks) {
-                        System.out.println("Blok #" + block.getNumber());
+                        allBlocks.add(block);
+                        BlockData dto = BlockData.fromBlock(block, logic);
+                        ConsoleReporter.reportBlock(dto);
                     }
+
+                    List<EthBlock.TransactionObject> newTxs = txsFetcher
+                            .getTransactionsFromLatestBlocks(
+                                    currentBlock.subtract(lastBlock).intValue(), bFetcher);
+                    for (EthBlock.TransactionObject tx : newTxs) {
+                        allTransactions.add(tx);
+                        TransactionData dto = TransactionData.fromTransaction(tx, logic);
+                        ConsoleReporter.reportTransaction(dto);
+                    }
+
                     lastBlock = currentBlock;
                 }
 
-                Thread.sleep(5000); // sprawdzaj co 5 sekund
+                Thread.sleep(UPDATE_TIME);
             }
 
         } catch (BlockchainDataException e) {
