@@ -1,8 +1,10 @@
 package pl.blockcraft.reporting;
 
 import org.web3j.protocol.core.methods.response.EthBlock;
+import pl.blockcraft.logic.LogicInterface;
 
 public class TransactionData {
+
     private final String transactionHash;
     private final String sender;
     private final String receiver;
@@ -18,21 +20,17 @@ public class TransactionData {
     }
 
     public String getTransactionHash() {return transactionHash;}
-
     public String getSender() {return sender;}
-
     public String getReceiver() {return receiver;}
-
     public double getEth() {return eth;}
-
     public long getGas() {return gas;}
 
-    public static TransactionData fromTransaction(EthBlock.TransactionObject tx) {
+    public static TransactionData fromTransaction(EthBlock.TransactionObject tx, LogicInterface logic) {
         return new TransactionData(
                 tx.getHash(),
-                tx.getFrom(),
-                tx.getTo(),
-                tx.getValue().doubleValue(),
+                logic.getSender(tx),
+                logic.getReceiver(tx),
+                logic.getValueOfTransaction(tx).doubleValue(),
                 tx.getGas().longValue()
         );
     }

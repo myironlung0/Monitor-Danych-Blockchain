@@ -5,12 +5,8 @@ import org.web3j.protocol.core.methods.response.EthBlock;
 import pl.blockcraft.access.*;
 import pl.blockcraft.exceptions.BlockchainDataException;
 import pl.blockcraft.exceptions.ConnectionException;
-import pl.blockcraft.reporting.BlockData;
-import pl.blockcraft.reporting.ConsoleReporter;
-import pl.blockcraft.reporting.TransactionData;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -18,11 +14,9 @@ import java.util.List;
  *
  */
 
-public class App {
-    private static final List<BlockData> allBlocks = new ArrayList<>();
-    private static final List<TransactionData> allTransactions = new ArrayList<>();
-
-    public static void main(String[] args) {
+public class App
+{
+    public static void main( String[] args ) {
         try {
 
             Web3j web3j = Web3jProvider.connect();
@@ -31,30 +25,17 @@ public class App {
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("\nClosing monitor...");
-                ConsoleReporter.reportSummary(allTransactions, allBlocks);
+            Runtime.getRuntime().addShutdownHook(new Thread()
+            {
+                public void run()
+                {
+                    System.out.println("Closing monitor...");
+                    web3j.shutdown();
+                }
+            });
 
-                web3j.shutdown();
-            }));
-
-            // BLOCKS
             List<EthBlock.Block> initialBlocks = bFetcher.getLatestBlocks(100);
-
-            for (EthBlock.Block block : initialBlocks) {
-                BlockData dto = BlockData.fromBlock(block);
-                allBlocks.add(dto);
-                ConsoleReporter.reportBlock(dto);
-            }
-
-            // TRANSACTIONS
-            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
-
-            for (EthBlock.TransactionObject tx : txList) {
-                TransactionData dto = TransactionData.fromTransaction(tx);
-                allTransactions.add(dto);
-                ConsoleReporter.reportTransaction(dto);
-            }
+            // reportowanie dodac
 
             // MAIN LOOP
             BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
@@ -83,7 +64,7 @@ public class App {
         } catch (ConnectionException e) {
             System.err.println("Connection error: " + e.getMessage());
             System.exit(1);
-        } catch (InterruptedException ie) {
+        } catch (InterruptedException ie){
             Thread.currentThread().interrupt();
         }
     }

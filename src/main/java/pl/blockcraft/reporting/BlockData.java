@@ -1,8 +1,10 @@
 package pl.blockcraft.reporting;
 
 import org.web3j.protocol.core.methods.response.EthBlock;
+import pl.blockcraft.logic.LogicInterface;
 
 public class BlockData {
+
     private final long blockNumber;
     private final String blockHash;
     private final int transactionCount;
@@ -14,16 +16,14 @@ public class BlockData {
     }
 
     public long getBlockNumber() {return blockNumber;}
-
     public String getBlockHash() {return blockHash;}
-
     public int getTransactionCount() {return transactionCount;}
 
-    public static BlockData fromBlock(EthBlock.Block block) {
+    public static BlockData fromBlock(EthBlock.Block block, LogicInterface logic) {
         return new BlockData(
                 block.getNumber().longValue(),
                 block.getHash(),
-                block.getTransactions().size()
+                logic.getNumberOfTransactions(block).intValue()
         );
     }
 }
