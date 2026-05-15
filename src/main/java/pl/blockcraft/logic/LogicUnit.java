@@ -106,26 +106,6 @@ public class LogicUnit implements LogicInterface
         return result;
     }
 
-    @Override
-    public BigInteger getTotalValueOfTransactions(EthBlock.Block block)
-    {
-        BigInteger result = BigInteger.ZERO;
-        List<EthBlock.TransactionResult> lista = block.getTransactions();
-        for(EthBlock.TransactionResult transaction : lista){
-            result = result.add(getValueOfTransaction((EthBlock.TransactionObject) transaction.get()));
-        }
-        return result;
-    }
-
-    @Override
-    public BigInteger getTotalValueOfTransactionsInBlocks(List<EthBlock.Block> blocks)
-    {
-        BigInteger result = BigInteger.ZERO;
-        for(EthBlock.Block block : blocks){
-            result = result.add(getTotalValueOfTransactions(block));
-        }
-        return result;
-    }
 
     @Override
     public String getSender(EthBlock.TransactionObject transaction)

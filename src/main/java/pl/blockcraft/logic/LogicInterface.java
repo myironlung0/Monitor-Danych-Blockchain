@@ -30,10 +30,6 @@ public interface LogicInterface
 
     BigInteger getTotalValueOfTransactions(List<EthBlock.TransactionObject> transactions);
 
-    BigInteger getTotalValueOfTransactions(EthBlock.Block block);
-
-    BigInteger getTotalValueOfTransactionsInBlocks(List<EthBlock.Block> blocks);
-
     String getSender(EthBlock.TransactionObject transaction);
 
     String getReceiver(EthBlock.TransactionObject transaction);
