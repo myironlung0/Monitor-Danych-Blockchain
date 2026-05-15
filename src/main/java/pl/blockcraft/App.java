@@ -5,10 +5,8 @@ import org.web3j.protocol.core.methods.response.EthBlock;
 import pl.blockcraft.access.*;
 import pl.blockcraft.exceptions.BlockchainDataException;
 import pl.blockcraft.exceptions.ConnectionException;
-import pl.blockcraft.reporting.BlockData;
-import pl.blockcraft.reporting.ConsoleReporter;
-import pl.blockcraft.reporting.TransactionData;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -18,54 +16,47 @@ import java.util.List;
 
 public class App 
 {
-    public static void main( String[] args ) throws ConnectionException, BlockchainDataException {
-        Web3j web3j = Web3jProvider.connect();
-        BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
-        TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
-
+    public static void main( String[] args ) {
         try {
+
+            Web3j web3j = Web3jProvider.connect();
+            BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
+            TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
-            // BLOCKS
-            List<EthBlock.Block> blockList = bFetcher.getLatestBlocks(10);
+            Runtime.getRuntime().addShutdownHook(new Thread()
+            {
+                public void run()
+                {
+                    System.out.println("Closing monitor...");
+                    web3j.shutdown();
+                }
+            });
 
-            for (EthBlock.Block block : blockList) {
-                BlockData dto = new BlockData(
-                        block.getNumber().longValue(),
-                        block.getHash(),
-                        block.getTransactions().size()
-                );
-                ConsoleReporter.reportBlock(dto);
+            List<EthBlock.Block> initialBlocks = bFetcher.getLatestBlocks(100);
+            // reportowanie dodac
+
+            // MAIN LOOP
+            BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
+            while (true) {
+                BigInteger currentBlock = bFetcher.getLatestBlock().getNumber();
+
+                if (currentBlock.compareTo(lastBlock) > 0) {
+                    System.out.println("new blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
+
+                    List<EthBlock.Block> newBlocks = bFetcher.getLatestBlocks(
+                            currentBlock.subtract(lastBlock).intValue()
+                    );
+                    // reportowanie dodac
+                    for (EthBlock.Block block : newBlocks) {
+                        System.out.println("Blok #" + block.getNumber());
+                    }
+                    lastBlock = currentBlock;
+                }
+
+                Thread.sleep(5000); // sprawdzaj co 5 sekund
             }
-
-            // TRANSACTIONS
-            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
-
-            for (EthBlock.TransactionObject tx : txList) {
-                TransactionData dto = new TransactionData(
-                        tx.getHash(),
-                        tx.getFrom(),
-                        tx.getTo(),
-                        tx.getValue().doubleValue(),
-                        tx.getGas().longValue()
-                );
-                ConsoleReporter.reportTransaction(dto);
-            }
-
-            // TESTY
-            EthBlock.Block block = bFetcher.getLatestBlock();
-
-            //List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionList(fetcher.getLatestBlock().getNumber());
-
-//            for(EthBlock.TransactionObject transaction : txList){
-//                System.out.println("Transaction index: " + transaction.getTransactionIndex());
-//                System.out.println("Transaction hash: " + transaction.getHash());
-//                System.out.println("Transaction gas: " + transaction.getGas());
-//
-//            }
-
-            System.out.println("Lacznie transakcji: " + txList.size());
 
         } catch (BlockchainDataException e) {
             System.err.println("Blockchain data error: " + e.getMessage());
@@ -73,8 +64,8 @@ public class App
         } catch (ConnectionException e) {
             System.err.println("Connection error: " + e.getMessage());
             System.exit(1);
+        } catch (InterruptedException ie){
+            Thread.currentThread().interrupt();
         }
-
-        web3j.shutdown();
     }
 }
