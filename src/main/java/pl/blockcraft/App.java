@@ -5,6 +5,11 @@ import org.web3j.protocol.core.methods.response.EthBlock;
 import pl.blockcraft.access.*;
 import pl.blockcraft.exceptions.BlockchainDataException;
 import pl.blockcraft.exceptions.ConnectionException;
+import pl.blockcraft.logic.LogicInterface;
+import pl.blockcraft.logic.LogicUnit;
+import pl.blockcraft.reporting.BlockData;
+import pl.blockcraft.reporting.ConsoleReporter;
+import pl.blockcraft.reporting.TransactionData;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -14,9 +19,12 @@ import java.util.List;
  *
  */
 
-public class App
-{
-    public static void main( String[] args ) {
+public class App {
+    private static final List<EthBlock.Block> allBlocks = new java.util.ArrayList<>();
+    private static final List<EthBlock.TransactionObject> allTransactions = new java.util.ArrayList<>();
+    private static final LogicInterface logic = new LogicUnit();
+
+    public static void main(String[] args) {
         try {
 
             Web3j web3j = Web3jProvider.connect();
@@ -25,17 +33,31 @@ public class App
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
-            Runtime.getRuntime().addShutdownHook(new Thread()
-            {
-                public void run()
-                {
-                    System.out.println("Closing monitor...");
-                    web3j.shutdown();
-                }
-            });
 
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("\nClosing monitor...");
+                ConsoleReporter.reportSummary(allBlocks, allTransactions, logic);
+
+                web3j.shutdown();
+            }));
+
+            // BLOCKS
             List<EthBlock.Block> initialBlocks = bFetcher.getLatestBlocks(100);
-            // reportowanie dodac
+
+            for (EthBlock.Block block : initialBlocks) {
+                allBlocks.add(block);
+                BlockData dto = BlockData.fromBlock(block, logic);
+                ConsoleReporter.reportBlock(dto);
+            }
+
+            // TRANSACTIONS
+            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
+
+            for (EthBlock.TransactionObject tx : txList) {
+                allTransactions.add(tx);
+                TransactionData dto = TransactionData.fromTransaction(tx, logic);
+                ConsoleReporter.reportTransaction(dto);
+            }
 
             // MAIN LOOP
             BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
@@ -64,7 +86,7 @@ public class App
         } catch (ConnectionException e) {
             System.err.println("Connection error: " + e.getMessage());
             System.exit(1);
-        } catch (InterruptedException ie){
+        } catch (InterruptedException ie) {
             Thread.currentThread().interrupt();
         }
     }
