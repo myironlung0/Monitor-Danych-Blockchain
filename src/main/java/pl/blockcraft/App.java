@@ -6,6 +6,7 @@ import pl.blockcraft.access.*;
 import pl.blockcraft.exceptions.BlockchainDataException;
 import pl.blockcraft.exceptions.ConnectionException;
 
+import java.math.BigInteger;
 import java.util.List;
 
 /**
@@ -15,31 +16,47 @@ import java.util.List;
 
 public class App 
 {
-    public static void main( String[] args ) throws ConnectionException, BlockchainDataException {
-        Web3j web3j = Web3jProvider.connect();
-        BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
-        TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
-
+    public static void main( String[] args ) {
         try {
+
+            Web3j web3j = Web3jProvider.connect();
+            BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
+            TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
 
-            // TESTY
-            EthBlock.Block block = bFetcher.getLatestBlock();
+            Runtime.getRuntime().addShutdownHook(new Thread()
+            {
+                public void run()
+                {
+                    System.out.println("Closing monitor...");
+                    web3j.shutdown();
+                }
+            });
 
-            List<EthBlock.Block> blockList = bFetcher.getLatestBlocks(10);
+            List<EthBlock.Block> initialBlocks = bFetcher.getLatestBlocks(100);
+            // reportowanie dodac
 
-            //List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionList(fetcher.getLatestBlock().getNumber());
+            // MAIN LOOP
+            BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
+            while (true) {
+                BigInteger currentBlock = bFetcher.getLatestBlock().getNumber();
 
-//            for(EthBlock.TransactionObject transaction : txList){
-//                System.out.println("Transaction index: " + transaction.getTransactionIndex());
-//                System.out.println("Transaction hash: " + transaction.getHash());
-//                System.out.println("Transaction gas: " + transaction.getGas());
-//
-//            }
+                if (currentBlock.compareTo(lastBlock) > 0) {
+                    System.out.println("new blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
 
-            List<EthBlock.TransactionObject> txList = txsFetcher.getTransactionsFromLatestBlocks(10, bFetcher);
-            System.out.println("Lacznie transakcji: " + txList.size());
+                    List<EthBlock.Block> newBlocks = bFetcher.getLatestBlocks(
+                            currentBlock.subtract(lastBlock).intValue()
+                    );
+                    // reportowanie dodac
+                    for (EthBlock.Block block : newBlocks) {
+                        System.out.println("Blok #" + block.getNumber());
+                    }
+                    lastBlock = currentBlock;
+                }
+
+                Thread.sleep(5000); // sprawdzaj co 5 sekund
+            }
 
         } catch (BlockchainDataException e) {
             System.err.println("Blockchain data error: " + e.getMessage());
@@ -47,8 +64,8 @@ public class App
         } catch (ConnectionException e) {
             System.err.println("Connection error: " + e.getMessage());
             System.exit(1);
+        } catch (InterruptedException ie){
+            Thread.currentThread().interrupt();
         }
-
-        web3j.shutdown();
     }
 }
