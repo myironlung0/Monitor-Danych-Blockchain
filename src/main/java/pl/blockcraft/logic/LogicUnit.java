@@ -77,7 +77,7 @@ public class LogicUnit implements LogicInterface
             result = result.add(getGas(block));
             number++;
         }
-        return result.divide(BigInteger.valueOf(number));
+        return (number!=0 ? result.divide(BigInteger.valueOf(number)):BigInteger.ZERO);
     }
 
     @Override
