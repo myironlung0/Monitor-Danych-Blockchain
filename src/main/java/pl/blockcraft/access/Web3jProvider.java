@@ -4,10 +4,12 @@ package pl.blockcraft.access;
 
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.http.HttpService;
+import org.web3j.protocol.websocket.WebSocketService;
 import pl.blockcraft.exceptions.ConnectionException;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.util.Properties;
 
 public class Web3jProvider {
@@ -16,13 +18,13 @@ public class Web3jProvider {
 
     public static Web3j connect() throws ConnectionException {
         try {
-            return Web3j.build(new HttpService(getNodeUrl()));
+            return Web3j.build(new HttpService(getNodeUrl("ethereum.node.url")));
         } catch (ConnectionException e) {
             throw new ConnectionException("Failed to connect to Ethereum network", e);
         }
     }
 
-    public static String getNodeUrl() throws ConnectionException {
+    public static String getNodeUrl(String propertyName) throws ConnectionException {
         Properties props = new Properties();
 
         try(InputStream input = Web3jProvider.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
@@ -31,7 +33,7 @@ public class Web3jProvider {
             }
             props.load(input);
 
-            String url = props.getProperty("ethereum.node.url");
+            String url = props.getProperty(propertyName);
             if (url == null) {
                 throw new ConnectionException("NO KEY 'ethereum.node.url' IN " + CONFIG_FILE, null);
             }
@@ -46,6 +48,16 @@ public class Web3jProvider {
             return web3j.web3ClientVersion().send().getWeb3ClientVersion();
         } catch (IOException e) {
             throw new ConnectionException("Failed to get client version", e);
+        }
+    }
+
+    public static Web3j connectWebSocket() throws ConnectionException{
+        try{
+            WebSocketService wsService = new WebSocketService(getNodeUrl("ethereum.node.wss"), true);
+            wsService.connect();
+            return Web3j.build(wsService);
+        }catch(ConnectException ce){
+            throw new ConnectionException("Failed to connect via WebSocket", ce);
         }
     }
 }
