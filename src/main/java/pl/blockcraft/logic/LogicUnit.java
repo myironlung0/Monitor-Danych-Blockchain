@@ -19,7 +19,7 @@ public class LogicUnit implements LogicInterface
     @Override
     public BigInteger getNumberOfTransactions(EthBlock.Block block)
     {
-        return BigInteger.valueOf(block.getTransactions().size());
+        return BigInteger.valueOf((block.getTransactions() != null)?block.getTransactions().size():0);
     }
 
     @Override
