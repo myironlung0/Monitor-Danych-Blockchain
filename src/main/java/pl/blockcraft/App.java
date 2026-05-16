@@ -1,5 +1,7 @@
 package pl.blockcraft;
 
+import io.reactivex.disposables.Disposable;
+import org.reactivestreams.Subscription;
 import org.web3j.protocol.Web3j;
 import org.web3j.protocol.core.methods.response.EthBlock;
 import pl.blockcraft.access.*;
@@ -28,19 +30,11 @@ public class App {
     public static void main(String[] args) {
         try {
 
-            Web3j web3j = Web3jProvider.connect();
+            Web3j web3j = Web3jProvider.connectWebSocket();
             BlockFetcherInterface bFetcher = new BlockFetcher(web3j);
             TransactionFetcherInterface txsFetcher = new TransactionFetcher(web3j);
             String clientVersion = Web3jProvider.getClientVersion(web3j);
             System.out.println("Connection successful, client version: " + clientVersion);
-
-
-            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-                System.out.println("\nClosing monitor...");
-                ConsoleReporter.reportSummary(allBlocks, allTransactions, logic);
-
-                web3j.shutdown();
-            }));
 
             // BLOCKS
             List<EthBlock.Block> initialBlocks = bFetcher.getLatestBlocks(100);
@@ -60,38 +54,69 @@ public class App {
                 ConsoleReporter.reportTransaction(dto);
             }
 
-            // MAIN LOOP
-            System.out.println("\nUPDATING EVERY " + UPDATE_TIME/1000 + " SECONDS");
-            BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
-            while (true) {
-                BigInteger currentBlock = bFetcher.getLatestBlock().getNumber();
+            // MAIN LOOP - POLLING
+//            System.out.println("\nUPDATING EVERY " + UPDATE_TIME/1000 + " SECONDS");
+//            BigInteger lastBlock = bFetcher.getLatestBlock().getNumber();
+//            while (true) {
+//                BigInteger currentBlock = bFetcher.getLatestBlock().getNumber();
+//
+//                if (currentBlock.compareTo(lastBlock) > 0) {
+//                    System.out.println("New blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
+//
+//                    List<EthBlock.Block> newBlocks = bFetcher.getLatestBlocks(
+//                            currentBlock.subtract(lastBlock).intValue()
+//                    );
+//                    for (EthBlock.Block block : newBlocks) {
+//                        allBlocks.add(block);
+//                        BlockData dto = BlockData.fromBlock(block, logic);
+//                        ConsoleReporter.reportBlock(dto);
+//                    }
+//
+//                    List<EthBlock.TransactionObject> newTxs = txsFetcher
+//                            .getTransactionsFromLatestBlocks(
+//                                    currentBlock.subtract(lastBlock).intValue(), bFetcher);
+//                    for (EthBlock.TransactionObject tx : newTxs) {
+//                        allTransactions.add(tx);
+//                        TransactionData dto = TransactionData.fromTransaction(tx, logic);
+//                        ConsoleReporter.reportTransaction(dto);
+//                    }
+//
+//                    lastBlock = currentBlock;
+//                }
+//
+//                Thread.sleep(UPDATE_TIME);
+//            }
 
-                if (currentBlock.compareTo(lastBlock) > 0) {
-                    System.out.println("New blocks: " + lastBlock + " -> " + currentBlock); // for testing; delete later
-
-                    List<EthBlock.Block> newBlocks = bFetcher.getLatestBlocks(
-                            currentBlock.subtract(lastBlock).intValue()
-                    );
-                    for (EthBlock.Block block : newBlocks) {
+            Disposable subscriptionB = web3j.blockFlowable(false).subscribe(
+                    b -> {
+                        System.out.println("\nSUBSCRIPTION FROM BLOCK"); // usun pozniej
+                        EthBlock.Block block = b.getBlock();
                         allBlocks.add(block);
                         BlockData dto = BlockData.fromBlock(block, logic);
                         ConsoleReporter.reportBlock(dto);
-                    }
+                    },
+                    error -> System.err.println("Block error: " + error.getMessage())
+            );
 
-                    List<EthBlock.TransactionObject> newTxs = txsFetcher
-                            .getTransactionsFromLatestBlocks(
-                                    currentBlock.subtract(lastBlock).intValue(), bFetcher);
-                    for (EthBlock.TransactionObject tx : newTxs) {
-                        allTransactions.add(tx);
-                        TransactionData dto = TransactionData.fromTransaction(tx, logic);
+            Disposable subscriptionTx = web3j.transactionFlowable().subscribe(
+                    tx -> {
+                        System.out.println("\nSUBSCRIPTION FROM TX"); // usun pozniej
+                        allTransactions.add((EthBlock.TransactionObject) tx);
+                        TransactionData dto = TransactionData.fromTransaction((EthBlock.TransactionObject) tx, logic);
                         ConsoleReporter.reportTransaction(dto);
-                    }
+                    },
+                    error -> System.err.println("Transaction error: " + error.getMessage())
+            );
 
-                    lastBlock = currentBlock;
-                }
+            Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+                System.out.println("\nClosing monitor...");
+                ConsoleReporter.reportSummary(allBlocks, allTransactions, logic);
 
-                Thread.sleep(UPDATE_TIME);
-            }
+                subscriptionB.dispose();
+                subscriptionTx.dispose();
+
+                web3j.shutdown();
+            }));
 
         } catch (BlockchainDataException e) {
             System.err.println("Blockchain data error: " + e.getMessage());
@@ -99,8 +124,6 @@ public class App {
         } catch (ConnectionException e) {
             System.err.println("Connection error: " + e.getMessage());
             System.exit(1);
-        } catch (InterruptedException ie) {
-            Thread.currentThread().interrupt();
         }
     }
 }
