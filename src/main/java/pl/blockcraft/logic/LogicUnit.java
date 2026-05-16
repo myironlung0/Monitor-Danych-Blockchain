@@ -1,5 +1,6 @@
 package pl.blockcraft.logic;
 
+import org.web3j.exceptions.MessageDecodingException;
 import org.web3j.protocol.core.methods.response.EthBlock;
 
 import java.math.BigInteger;
@@ -45,7 +46,15 @@ public class LogicUnit implements LogicInterface
     @Override
     public BigInteger getGas(EthBlock.Block block)
     {
-        return block.getGasUsed();
+        BigInteger result;
+        try
+        {
+            result = (block != null)?block.getGasUsed():BigInteger.ZERO;
+        } catch(MessageDecodingException e)
+        {
+            return BigInteger.ZERO;
+        }
+        return result;
     }
 
     @Override
