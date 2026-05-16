@@ -92,7 +92,15 @@ public class LogicUnit implements LogicInterface
     @Override
     public BigInteger getValueOfTransaction(EthBlock.TransactionObject transaction)
     {
-        return transaction.getValue();
+        BigInteger result;
+        try
+        {
+            result = (transaction != null)?transaction.getValue():BigInteger.ZERO;
+        } catch(MessageDecodingException e)
+        {
+            return BigInteger.ZERO;
+        }
+        return result;
     }
 
     @Override
