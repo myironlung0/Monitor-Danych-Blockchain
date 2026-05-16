@@ -13,13 +13,13 @@ public class LogicUnit implements LogicInterface
     @Override
     public BigInteger getNumberOfBlocks(List<EthBlock.Block> blocks)
     {
-        return BigInteger.valueOf(blocks.size());
+        return BigInteger.valueOf((blocks != null)?blocks.size():0);
     }
 
     @Override
     public BigInteger getNumberOfTransactions(EthBlock.Block block)
     {
-        return BigInteger.valueOf(block.getTransactions().size());
+        return BigInteger.valueOf((block.getTransactions() != null)?block.getTransactions().size():0);
     }
 
     @Override
@@ -77,7 +77,7 @@ public class LogicUnit implements LogicInterface
             result = result.add(getGas(block));
             number++;
         }
-        return result.divide(BigInteger.valueOf(number));
+        return (number!=0 ? result.divide(BigInteger.valueOf(number)):BigInteger.ZERO);
     }
 
     @Override
