@@ -13,7 +13,7 @@ public class LogicUnit implements LogicInterface
     @Override
     public BigInteger getNumberOfBlocks(List<EthBlock.Block> blocks)
     {
-        return BigInteger.valueOf(blocks.size());
+        return BigInteger.valueOf((blocks != null)?blocks.size():0);
     }
 
     @Override
