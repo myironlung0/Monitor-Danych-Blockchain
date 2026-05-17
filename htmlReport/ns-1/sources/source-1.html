@@ -1,0 +1,254 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LogicUnit</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">pl.blockcraft.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicUnit (pl.blockcraft.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+<th class="coverageStat 
+">
+  Class, %
+</th>
+<th class="coverageStat 
+">
+  Method, %
+</th>
+<th class="coverageStat 
+">
+  Branch, %
+</th>
+<th class="coverageStat 
+">
+  Line, %
+</th>
+</tr>
+<tr>
+  <td class="name">LogicUnit</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (1/1)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (14/14)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    83,3%
+  </span>
+  <span class="absValue">
+    (20/24)
+  </span>
+</td>
+<td class="coverageStat">
+  <span class="percent">
+    100%
+  </span>
+  <span class="absValue">
+    (41/41)
+  </span>
+</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package pl.blockcraft.logic;
+&nbsp;
+&nbsp;import org.web3j.exceptions.MessageDecodingException;
+&nbsp;import org.web3j.protocol.core.methods.response.EthBlock;
+&nbsp;
+&nbsp;import java.math.BigInteger;
+&nbsp;import java.util.ArrayList;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;
+<b class="fc">&nbsp;public class LogicUnit implements LogicInterface</b>
+&nbsp;{
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getNumberOfBlocks(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="pc">&nbsp;        return BigInteger.valueOf((blocks != null)?blocks.size():0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getNumberOfTransactions(EthBlock.Block block)
+&nbsp;    {
+<b class="fc">&nbsp;        return BigInteger.valueOf((block.getTransactions() != null)?block.getTransactions().size():0);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;BigInteger&gt; getNumberOfTransactions(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="fc">&nbsp;        List&lt;BigInteger&gt; result = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        for(EthBlock.Block block : blocks){</b>
+<b class="fc">&nbsp;            result.add(getNumberOfTransactions(block));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getTotalNumberOfTransactions(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="fc">&nbsp;        BigInteger result = BigInteger.ZERO;</b>
+<b class="fc">&nbsp;        for(EthBlock.Block block : blocks){</b>
+<b class="fc">&nbsp;            result = result.add(getNumberOfTransactions(block));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getGas(EthBlock.Block block)
+&nbsp;    {
+&nbsp;        BigInteger result;
+&nbsp;        try
+&nbsp;        {
+<b class="pc">&nbsp;            result = (block != null)?block.getGasUsed():BigInteger.ZERO;</b>
+&nbsp;        } catch(MessageDecodingException e)
+&nbsp;        {
+<b class="fc">&nbsp;            return BigInteger.ZERO;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;BigInteger&gt; getGas(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="fc">&nbsp;        List&lt;BigInteger&gt; result = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        for(EthBlock.Block block : blocks){</b>
+<b class="fc">&nbsp;            result.add(getGas(block));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getTotalGas(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="fc">&nbsp;        BigInteger result = BigInteger.ZERO;</b>
+<b class="fc">&nbsp;        for(EthBlock.Block block : blocks){</b>
+<b class="fc">&nbsp;            result = result.add(getGas(block));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getAverageGas(List&lt;EthBlock.Block&gt; blocks)
+&nbsp;    {
+<b class="fc">&nbsp;        int number = 0;</b>
+<b class="fc">&nbsp;        BigInteger result = BigInteger.ZERO;</b>
+<b class="fc">&nbsp;        for(EthBlock.Block block : blocks){</b>
+<b class="fc">&nbsp;            result = result.add(getGas(block));</b>
+<b class="fc">&nbsp;            number++;</b>
+&nbsp;        }
+<b class="pc">&nbsp;        return (number!=0 ? result.divide(BigInteger.valueOf(number)):BigInteger.ZERO);</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getValueOfTransaction(EthBlock.TransactionObject transaction)
+&nbsp;    {
+&nbsp;        BigInteger result;
+&nbsp;        try
+&nbsp;        {
+<b class="pc">&nbsp;            result = (transaction != null)?transaction.getValue():BigInteger.ZERO;</b>
+&nbsp;        } catch(MessageDecodingException e)
+&nbsp;        {
+<b class="fc">&nbsp;            return BigInteger.ZERO;</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public List&lt;BigInteger&gt; getValueOfTransactions(List&lt;EthBlock.TransactionObject&gt; transactions)
+&nbsp;    {
+<b class="fc">&nbsp;        List&lt;BigInteger&gt; result = new ArrayList&lt;&gt;();</b>
+<b class="fc">&nbsp;        for(EthBlock.TransactionObject transaction : transactions){</b>
+<b class="fc">&nbsp;            result.add(getValueOfTransaction(transaction));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public BigInteger getTotalValueOfTransactions(List&lt;EthBlock.TransactionObject&gt; transactions)
+&nbsp;    {
+<b class="fc">&nbsp;        BigInteger result = BigInteger.ZERO;</b>
+<b class="fc">&nbsp;        for(EthBlock.TransactionObject transaction : transactions){</b>
+<b class="fc">&nbsp;            result = result.add(getValueOfTransaction(transaction));</b>
+&nbsp;        }
+<b class="fc">&nbsp;        return result;</b>
+&nbsp;    }
+&nbsp;
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getSender(EthBlock.TransactionObject transaction)
+&nbsp;    {
+<b class="fc">&nbsp;        return transaction.getFrom();</b>
+&nbsp;    }
+&nbsp;
+&nbsp;    @Override
+&nbsp;    public String getReceiver(EthBlock.TransactionObject transaction)
+&nbsp;    {
+<b class="fc">&nbsp;        return transaction.getTo();</b>
+&nbsp;    }
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-17 17:39</div>
+</div>
+</body>
+</html>

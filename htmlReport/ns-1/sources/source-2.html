@@ -1,0 +1,104 @@
+
+
+
+<!DOCTYPE html>
+<html id="htmlId">
+<head>
+  <meta http-equiv="Content-Type" content="text/html;charset=UTF-8"> 
+  <title>Coverage Report > LogicInterface</title>
+  <style type="text/css">
+    @import "../../css/coverage.css";
+    @import "../../css/idea.min.css";
+  </style>
+  <script type="text/javascript" src="../../js/highlight.min.js"></script>
+  <script type="text/javascript" src="../../js/highlightjs-line-numbers.min.js"></script>
+</head>
+
+<body>
+<div class="content">
+<div class="breadCrumbs">
+Current scope:     <a href="../../index.html">all classes</a>
+    <span class="separator">|</span>
+    <a href="../index.html">pl.blockcraft.logic</a>
+</div>
+
+<h1>Coverage Summary for Class: LogicInterface (pl.blockcraft.logic)</h1>
+
+<table class="coverageStats">
+<tr>
+  <th class="name">Class</th>
+</tr>
+<tr>
+  <td class="name">LogicInterface</td>
+</tr>
+
+</table>
+
+<br/>
+<br/>
+
+
+<pre>
+<code class="sourceCode" id="sourceCode">&nbsp;package pl.blockcraft.logic;
+&nbsp;
+&nbsp;import org.web3j.protocol.core.methods.response.EthBlock;
+&nbsp;import pl.blockcraft.access.BlockFetcherInterface;
+&nbsp;
+&nbsp;import java.math.BigInteger;
+&nbsp;import java.util.List;
+&nbsp;
+&nbsp;public interface LogicInterface
+&nbsp;{
+&nbsp;    BigInteger getNumberOfBlocks(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getNumberOfTransactions(EthBlock.Block block);
+&nbsp;
+&nbsp;    List&lt;BigInteger&gt; getNumberOfTransactions(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getTotalNumberOfTransactions(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getGas(EthBlock.Block block);
+&nbsp;
+&nbsp;    List&lt;BigInteger&gt; getGas(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getTotalGas(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getAverageGas(List&lt;EthBlock.Block&gt; blocks);
+&nbsp;
+&nbsp;    BigInteger getValueOfTransaction(EthBlock.TransactionObject transaction);
+&nbsp;
+&nbsp;    List&lt;BigInteger&gt; getValueOfTransactions(List&lt;EthBlock.TransactionObject&gt; transactions);
+&nbsp;
+&nbsp;    BigInteger getTotalValueOfTransactions(List&lt;EthBlock.TransactionObject&gt; transactions);
+&nbsp;
+&nbsp;    String getSender(EthBlock.TransactionObject transaction);
+&nbsp;
+&nbsp;    String getReceiver(EthBlock.TransactionObject transaction);
+&nbsp;}
+</code>
+</pre>
+</div>
+
+<script type="text/javascript">
+(function() {
+    var msie = false, msie9 = false;
+    /*@cc_on
+      msie = true;
+      @if (@_jscript_version >= 9)
+        msie9 = true;
+      @end
+    @*/
+
+    if (!msie || msie && msie9) {
+      hljs.highlightAll()
+      hljs.initLineNumbersOnLoad();
+    }
+})();
+</script>
+
+<div class="footer">
+    
+    <div style="float:right;">generated on 2026-05-17 17:39</div>
+</div>
+</body>
+</html>
