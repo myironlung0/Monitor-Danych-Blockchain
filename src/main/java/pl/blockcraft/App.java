@@ -87,9 +87,10 @@ public class App {
 //                Thread.sleep(UPDATE_TIME);
 //            }
 
+            System.out.println("\n-------BEGIN MONITORING INCOMING BLOCKS AND TRANSACTIONS-------\n");
             Disposable subscriptionB = web3j.blockFlowable(false).subscribe(
                     b -> {
-                        System.out.println("\nSUBSCRIPTION FROM BLOCK"); // usun pozniej
+                        //System.out.println("\nSUBSCRIPTION FROM BLOCK"); // usun pozniej
                         EthBlock.Block block = b.getBlock();
                         allBlocks.add(block);
                         BlockData dto = BlockData.fromBlock(block, logic);
@@ -100,7 +101,7 @@ public class App {
 
             Disposable subscriptionTx = web3j.transactionFlowable().subscribe(
                     tx -> {
-                        System.out.println("\nSUBSCRIPTION FROM TX"); // usun pozniej
+                        //System.out.println("\nSUBSCRIPTION FROM TX"); // usun pozniej
                         allTransactions.add((EthBlock.TransactionObject) tx);
                         TransactionData dto = TransactionData.fromTransaction((EthBlock.TransactionObject) tx, logic);
                         ConsoleReporter.reportTransaction(dto);
